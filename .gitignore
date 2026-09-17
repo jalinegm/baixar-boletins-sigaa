@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+boletins/
+.perfil-sigaa/
+debug/
+node_modules/
+.DS_Store
+Thumbs.db
