@@ -60,7 +60,8 @@ class ErroLogin(ErroNavegacao):
 
 
 class SigaaSessao:
-    def __init__(self, url, perfil, pasta_debug="debug"):
+    def __init__(self, url, perfil, pasta_debug="debug", on_status=None,
+                 wait_for_link=None, check_stop=None):
         self.url = url
         self.perfil = perfil
         self.pasta_debug = Path(pasta_debug)
@@ -68,6 +69,9 @@ class SigaaSessao:
         self.context = None
         self.page = None
         self._voltas_extras = 0
+        self.on_status = on_status or print
+        self.wait_for_link = wait_for_link or input
+        self.check_stop = check_stop or (lambda: None)
 
     def abrir(self):
         self._pw = sync_playwright().start()
@@ -117,19 +121,20 @@ class SigaaSessao:
         avisou_vinculo = False
         reentradas = 0
         for _ in range(TEMPO_LOGIN_S // 2):
+            self.check_stop()
             self.page.wait_for_load_state("domcontentloaded")
             if self._no_menu():
                 break
             if self._na_tela_login():
                 if not avisou:
-                    print("Faça login no SIGAA na janela do navegador aberta...")
+                    self.on_status("Faça login no SIGAA na janela do navegador aberta...")
                     avisou = True
                 self.page.wait_for_timeout(2000)
                 continue
             if self._na_tela_vinculos():
                 if not avisou_vinculo:
-                    print("Escolha o vínculo/perfil na janela do navegador e pressione Enter para continuar...")
-                    input()
+                    self.on_status("Escolha o vínculo/perfil na janela do navegador e pressione Enter para continuar...")
+                    self.wait_for_link()
                     avisou_vinculo = True
                 continue
             # Logado, mas em outra página (portal, aviso, erro): reentra no módulo.
@@ -142,7 +147,7 @@ class SigaaSessao:
             elif reentradas == 5:
                 reentradas += 1
                 self.salvar_debug("entrada_modulo")
-                print("Abra manualmente o módulo 'Ensino Técnico Integrado' na janela...")
+                self.on_status("Abra manualmente o módulo 'Ensino Técnico Integrado' na janela...")
         else:
             self.salvar_debug("menu_sem_emitir_boletim")
             raise ErroLogin("Link 'Emitir Boletim' não encontrado dentro do tempo limite.")

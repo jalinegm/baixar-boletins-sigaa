@@ -5,6 +5,8 @@ venv/
 *.egg-info/
 dist/
 build/
+*.spec
+.impeccable/
 boletins/
 .perfil-sigaa/
 debug/
