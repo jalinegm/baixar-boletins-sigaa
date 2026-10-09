@@ -1,10 +1,52 @@
-# Baixar Boletins do SIGAA (IFFar)
+# Boletins SIGAA · IFFar
 
-Script local que baixa em lote os boletins escolares ("Boletim Escolar") do SIGAA do
+Aplicativo local que baixa em lote os boletins escolares ("Boletim Escolar") do SIGAA do
 IFFar, a partir de uma lista de matrículas em um arquivo CSV. Cada boletim é salvo em
 PDF (Layout Paisagem, Escala 100) com o nome `<matricula>.pdf` na pasta `boletins/`.
 
-## O que você precisa
+## Interface gráfica no Windows
+
+1. Baixe o [BoletinsSIGAA.exe da release mais recente](https://github.com/jalinegm/baixar-boletins-sigaa/releases/latest/download/BoletinsSIGAA.exe),
+   salve em uma pasta onde você possa gravar arquivos e abra com dois cliques.
+   O executável inclui o Chromium: **não é preciso instalar Python**.
+2. Na etapa **Arquivo**, clique em **Escolher arquivo CSV**. Se precisar de um
+   modelo, clique em **Baixar CSV de exemplo** e substitua as matrículas fictícias.
+   Após a seleção, o aplicativo avança para **Acesso ao SIGAA**.
+3. Clique em **Abrir SIGAA e baixar**. Faça o login no navegador que abrir.
+   Quando o SIGAA pedir o vínculo, escolha o desejado, volte ao aplicativo e
+   clique em **Já escolhi o vínculo · Continuar**.
+4. Acompanhe o lote na etapa **Boletins**. Selecione uma matrícula marcada como
+   **Baixado** para usar **Abrir PDF**, ou clique em **Abrir pasta de PDFs**.
+
+O aplicativo mostra uma etapa por vez. Antes de iniciar o lote, **Voltar ao
+arquivo** ou o indicador **Arquivo** permite trocar o CSV ou continuar com o
+mesmo. Depois que o lote termina, também é possível clicar em **Arquivo** para
+voltar. **Interromper após esta matrícula** encerra o lote após a operação atual;
+uma nova execução mantém os PDFs já concluídos. Quando houver erros, use
+**Tentar pendentes**.
+
+### Formato do CSV
+
+O arquivo precisa ter uma coluna `Matrícula` ou `Matricula`, com qualquer
+combinação de maiúsculas e minúsculas. Coloque uma matrícula por linha:
+
+```csv
+Matrícula
+123456
+789012
+```
+
+Os números acima são fictícios. Matrículas duplicadas são ignoradas, e a
+interface mostra quantos valores inválidos foram descartados.
+
+### Arquivos gerados
+
+Ao lado do executável, o aplicativo cria `boletins/` para PDFs e progresso e
+`.perfil-sigaa/` para a sessão do navegador. Mantenha o executável em uma pasta
+com permissão de gravação. **Não publique PDFs nem o perfil do navegador:**
+eles contêm dados pessoais e de acesso.
+
+## Executar pelo código-fonte
 
 - **Windows** (é o ambiente de uso previsto).
 - **Python 3.10 ou superior** instalado. Se não tiver, baixe em
@@ -12,96 +54,25 @@ PDF (Layout Paisagem, Escala 100) com o nome `<matricula>.pdf` na pasta `boletin
   **"Add Python to PATH"**.
 - **Acesso ao SIGAA** com uma conta ativa (o login é feito por você, nunca pelo script).
 
-## Como usar (passo a passo)
+### Abrir a interface ou o terminal
 
-### 1. Prepare o arquivo CSV
+Dê dois cliques em `abrir_gui.bat` para abrir a interface gráfica a partir do
+código-fonte. Na primeira execução, o script instala as dependências e o
+Chromium; isso pode levar alguns minutos.
 
-Crie um arquivo CSV (por exemplo, `matriculas.csv`) com uma coluna chamada
-`Matrícula` ou `Matricula`. Maiúsculas e minúsculas também são aceitas
-(`MATRICULA`, `matricula`, etc.). Na interface gráfica, clique em
-**Baixar CSV de exemplo** para salvar um modelo com matrículas fictícias.
-
-Exemplo de conteúdo (`T10.csv`):
-
-```csv
-Matricula
-2026304855
-2026305084
-2026305674
-```
-
-Coloque o arquivo na mesma pasta do projeto (ou anote o caminho dele).
-
-### 2. Execute
-
-Há duas formas:
-
-**Interface gráfica (recomendada):** dê um duplo clique em `abrir_gui.bat`.
-Na janela, clique em **Escolher arquivo CSV** e depois em **Abrir SIGAA e baixar**. Na
-primeira execução, o arquivo instala o Playwright e o Chromium automaticamente;
-isso pode demorar alguns minutos. O Python 3.10 ou superior ainda precisa estar
-instalado, conforme a seção anterior.
-
-Para distribuir a alguém que não tenha Python, execute `build_windows.bat` uma
-vez em um computador Windows. Entregue o arquivo `dist/BoletinsSIGAA.exe`; a
-pessoa abre a janela com um duplo clique no executável. O Chromium acompanha o
-arquivo, por isso ele é grande. Os PDFs e o perfil de acesso ficam na pasta do
-executável, que deve estar em um local onde a pessoa possa gravar arquivos.
-
-**Terminal:** dê um duplo clique em `rodar.bat`. Ele vai pedir o nome do CSV
-(ex.: `T10.csv`).
-
-**Ou pela linha de comando no PowerShell**, dentro da pasta do projeto.
-
-Para abrir o PowerShell na pasta do projeto: abra a pasta no Explorador de Arquivos,
-segure `Shift` e clique com o botão direito em um espaço vazio, depois escolha
-**"Abrir janela do PowerShell aqui"**. Ou, já com o PowerShell aberto, navegue até a pasta:
+Para usar o terminal, dê dois cliques em `rodar.bat` e informe o caminho do CSV,
+ou execute no PowerShell, dentro da pasta do projeto:
 
 ```powershell
-cd "C:\caminho\para\projeto-boletim"
+.\rodar.bat matriculas.csv
 ```
 
-Em seguida, rode o comando com o nome do seu CSV:
+Para gerar o executável portátil, dê dois cliques em `build_windows.bat`. O
+resultado fica em `dist/BoletinsSIGAA.exe`.
 
-```powershell
-.\rodar.bat T10.csv
-```
-
-Para passar opções adicionais, acrescente-as após o nome do CSV:
-
-```powershell
-.\rodar.bat T10.csv --pasta saida --reprocessar
-```
-
-Na primeira execução, o `rodar.bat` instala automaticamente as dependências e o
-navegador (Chromium). Isso acontece só uma vez e pode demorar alguns minutos.
-
-### 3. Faça o login e escolha o vínculo
-
-- O navegador abre sozinho na tela do SIGAA.
-- Se não estiver logado, **faça o login manualmente** na janela que abriu.
-- Após o login, o SIGAA mostra a tela de **escolha de vínculo** (`vinculos.jsf`).
-  Escolha o vínculo/perfil desejado. Na interface gráfica, volte à janela do
-  aplicativo e clique em **Já escolhi o vínculo · Continuar**. No terminal,
-  pressione Enter.
-
-### 4. Acompanhe o resultado
-
-O script busca uma matrícula por vez, gera o PDF em `boletins/` e mostra o
-resultado de cada matrícula. Na interface gráfica, selecione uma matrícula
-baixada e clique em **Abrir PDF** (ou pressione Enter). O botão
-**Interromper após esta matrícula**
-termina a operação atual antes de fechar o navegador; uma nova execução retoma
-as matrículas pendentes. No terminal, ao final, aparece um resumo:
-
-```
-Resumo da execução:
-  Total processado: 31
-  PDFs gerados: 30
-  Não encontradas: 1
-  Erros: 0
-  Pasta de saída: ...\boletins
-```
+No terminal, faça o login manualmente no navegador, escolha o vínculo e
+pressione Enter para continuar. Cada boletim é salvo como `<matricula>.pdf` em
+`boletins/` (paisagem, escala 100%). O progresso e o resumo aparecem no terminal.
 
 ## Opções da linha de comando
 
@@ -116,7 +87,7 @@ Resumo da execução:
 Exemplo:
 
 ```powershell
-.\rodar.bat T10.csv --pasta saida --reprocessar
+.\rodar.bat matriculas.csv --pasta saida --reprocessar
 ```
 
 ## Como funciona
@@ -132,9 +103,9 @@ Exemplo:
 
 ## Solução de problemas
 
-- **"python" não é reconhecido**: o Python não está no PATH. Reinstale marcando
-  "Add Python to PATH", ou use o caminho completo do executável.
-- **Navegador não abre / erro de Playwright**: rode no terminal
+- **Python não é reconhecido ao usar os arquivos `.bat`:** reinstale marcando
+  **Add Python to PATH**. O `.exe` da release dispensa Python.
+- **Chromium não abre ao usar o código-fonte:** rode no terminal
   `python -m playwright install chromium`.
 - **Login não concluído dentro do tempo limite**: o script aguarda até 10 minutos; faça o
   login na janela aberta e aguarde.
@@ -150,6 +121,5 @@ projeto-boletim/
 ├── rodar.bat            # atalho para executar (instala dependências na 1ª vez)
 ├── requirements.txt     # dependências Python
 ├── pyproject.toml       # definição do pacote
-├── T10.csv              # CSV de exemplo
 └── src/baixar_boletins/ # código-fonte
 ```
