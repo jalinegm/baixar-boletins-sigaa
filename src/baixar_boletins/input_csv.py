@@ -1,4 +1,5 @@
 import csv
+import unicodedata
 from pathlib import Path
 
 
@@ -18,7 +19,7 @@ def carregar_matriculas(caminho):
 
         coluna = _localizar_coluna(leitor.fieldnames)
         if coluna is None:
-            raise ErroCSV("CSV sem a coluna 'Matricula'")
+            raise ErroCSV("CSV sem a coluna 'Matrícula' (com ou sem acento)")
 
         matriculas = []
         duplicadas = []
@@ -46,6 +47,13 @@ def carregar_matriculas(caminho):
 
 def _localizar_coluna(nomes):
     for nome in nomes:
-        if nome and nome.strip().lower() == "matricula":
+        if not nome:
+            continue
+        normalized = unicodedata.normalize("NFKD", nome.strip()).casefold()
+        normalized = "".join(
+            character for character in normalized
+            if not unicodedata.combining(character)
+        )
+        if normalized == "matricula":
             return nome
     return None
